@@ -3,94 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Glider Quiz Trainer</title>
+  <title>Glider Quiz Index</title>
   <style>
-    body { font-family: sans-serif; margin: 20px; max-width: 600px; }
-    .question-box { margin-bottom: 20px; }
-    .answers input { margin-right: 10px; }
-    .correct { color: green; }
-    .incorrect { color: red; }
-    .hidden { display: none; }
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    h1 { text-align: center; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 10px 0; }
+    a { text-decoration: none; color: #007acc; font-size: 18px; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h1>Glider Quiz Trainer</h1>
-  <div id="quiz"></div>
-  <button id="nextBtn" class="hidden">Next Question</button>
-  <div id="scoreBox" class="hidden"></div>
+  <h1>Glider Quiz Index</h1>
+  <ul id="quizList"></ul>
 
   <script>
-    let questions = [];
-    let currentIndex = 0;
-    let score = 0;
+    const quizzes = [
+      { name: "Airspace Rules", path: "airspace-rules/" },
+      { name: "Meteorology", path: "meteorology/" }
+    ];
 
-    function loadQuestions() {
-      const saved = localStorage.getItem('glider_questions');
-      if (saved) {
-        questions = JSON.parse(saved);
-      } else {
-        questions = [
-          {
-            question: "What is the typical stall speed of a K13 glider?",
-            answers: ["35 knots", "42 knots", "50 knots", "60 knots"],
-            correct: 0
-          },
-          {
-            question: "How high must the cloud base be to remain legally VFR?",
-            answers: ["500 ft", "1000 ft", "1500 ft", "2000 ft"],
-            correct: 1
-          }
-        ];
-        localStorage.setItem('glider_questions', JSON.stringify(questions));
-      }
-    }
-
-    function renderQuestion() {
-      if (currentIndex >= questions.length) {
-        document.getElementById('quiz').innerHTML = '<h3>Quiz complete!</h3>';
-        document.getElementById('scoreBox').classList.remove('hidden');
-        document.getElementById('scoreBox').textContent = `Your score: ${score}/${questions.length}`;
-        document.getElementById('nextBtn').classList.add('hidden');
-        return;
-      }
-
-      const q = questions[currentIndex];
-      let html = `<div class='question-box'><h3>${q.question}</h3>`;
-      q.answers.forEach((a, i) => {
-        html += `<div><label><input type='radio' name='answer' value='${i}' /> ${a}</label></div>`;
-      });
-      html += `<button onclick='submitAnswer()'>Submit Answer</button></div>`;
-
-      document.getElementById('quiz').innerHTML = html;
-      document.getElementById('nextBtn').classList.add('hidden');
-    }
-
-    function submitAnswer() {
-      const selected = document.querySelector('input[name="answer"]:checked');
-      if (!selected) return alert('Please select an answer.');
-
-      const answerIndex = parseInt(selected.value);
-      const q = questions[currentIndex];
-      const allInputs = document.querySelectorAll('input[name="answer"]');
-
-      allInputs.forEach((input, i) => {
-        const label = input.parentElement;
-        if (i === q.correct) label.classList.add('correct');
-        else if (i === answerIndex) label.classList.add('incorrect');
-        input.disabled = true;
-      });
-
-      if (answerIndex === q.correct) score++;
-      document.getElementById('nextBtn').classList.remove('hidden');
-    }
-
-    document.getElementById('nextBtn').onclick = () => {
-      currentIndex++;
-      renderQuestion();
-    };
-
-    loadQuestions();
-    renderQuestion();
+    const ul = document.getElementById('quizList');
+    quizzes.forEach(q => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = q.path + 'index.html';
+      a.textContent = q.name;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
   </script>
 </body>
 </html>
