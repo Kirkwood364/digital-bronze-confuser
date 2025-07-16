@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glider Quiz Trainer</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; max-width: 600px; }
+    .question-box { margin-bottom: 20px; }
+    .answers input { margin-right: 10px; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Glider Quiz Trainer</h1>
+  <div id="quiz"></div>
+  <button id="nextBtn" class="hidden">Next Question</button>
+  <div id="scoreBox" class="hidden"></div>
+
+  <script>
+    let questions = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    function loadQuestions() {
+      const saved = localStorage.getItem('glider_questions');
+      if (saved) {
+        questions = JSON.parse(saved);
+      } else {
+        questions = [
+          {
+            question: "What is the typical stall speed of a K13 glider?",
+            answers: ["35 knots", "42 knots", "50 knots", "60 knots"],
+            correct: 0
+          },
+          {
+            question: "How high must the cloud base be to remain legally VFR?",
+            answers: ["500 ft", "1000 ft", "1500 ft", "2000 ft"],
+            correct: 1
+          }
+        ];
+        localStorage.setItem('glider_questions', JSON.stringify(questions));
+      }
+    }
+
+    function renderQuestion() {
+      if (currentIndex >= questions.length) {
+        document.getElementById('quiz').innerHTML = '<h3>Quiz complete!</h3>';
+        document.getElementById('scoreBox').classList.remove('hidden');
+        document.getElementById('scoreBox').textContent = `Your score: ${score}/${questions.length}`;
+        document.getElementById('nextBtn').classList.add('hidden');
+        return;
+      }
+
+      const q = questions[currentIndex];
+      let html = `<div class='question-box'><h3>${q.question}</h3>`;
+      q.answers.forEach((a, i) => {
+        html += `<div><label><input type='radio' name='answer' value='${i}' /> ${a}</label></div>`;
+      });
+      html += `<button onclick='submitAnswer()'>Submit Answer</button></div>`;
+
+      document.getElementById('quiz').innerHTML = html;
+      document.getElementById('nextBtn').classList.add('hidden');
+    }
+
+    function submitAnswer() {
+      const selected = document.querySelector('input[name="answer"]:checked');
+      if (!selected) return alert('Please select an answer.');
+
+      const answerIndex = parseInt(selected.value);
+      const q = questions[currentIndex];
+      const allInputs = document.querySelectorAll('input[name="answer"]');
+
+      allInputs.forEach((input, i) => {
+        const label = input.parentElement;
+        if (i === q.correct) label.classList.add('correct');
+        else if (i === answerIndex) label.classList.add('incorrect');
+        input.disabled = true;
+      });
+
+      if (answerIndex === q.correct) score++;
+      document.getElementById('nextBtn').classList.remove('hidden');
+    }
+
+    document.getElementById('nextBtn').onclick = () => {
+      currentIndex++;
+      renderQuestion();
+    };
+
+    loadQuestions();
+    renderQuestion();
+  </script>
+</body>
+</html>

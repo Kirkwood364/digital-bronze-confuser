@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Admin Panel</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; max-width: 600px; }
+    textarea { width: 100%; height: 300px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Quiz Admin Panel</h1>
+
+  <div id="loginBox">
+    <p><strong>Enter admin password:</strong></p>
+    <input type="password" id="adminPass" />
+    <button onclick="checkPassword()">Login</button>
+  </div>
+
+  <div id="editorBox" class="hidden">
+    <h3>Edit Questions (JSON Format)</h3>
+    <textarea id="jsonEditor"></textarea><br>
+    <button onclick="saveQuestions()">Save Changes</button>
+    <button onclick="downloadJSON()">Download Backup</button>
+    <button onclick="clearQuestions()">Clear All Questions</button>
+  </div>
+
+  <script>
+    const PASSWORD = "glider123";
+
+    function checkPassword() {
+      const input = document.getElementById("adminPass").value;
+      if (input === PASSWORD) {
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("editorBox").classList.remove("hidden");
+        loadQuestions();
+      } else {
+        alert("Incorrect password.");
+      }
+    }
+
+    function loadQuestions() {
+      const saved = localStorage.getItem("glider_questions");
+      document.getElementById("jsonEditor").value = saved ? saved : "[]";
+    }
+
+    function saveQuestions() {
+      try {
+        const content = document.getElementById("jsonEditor").value;
+        JSON.parse(content);
+        localStorage.setItem("glider_questions", content);
+        alert("Questions saved.");
+      } catch {
+        alert("Invalid JSON format.");
+      }
+    }
+
+    function downloadJSON() {
+      const blob = new Blob([
+        document.getElementById("jsonEditor").value
+      ], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'glider-questions.json';
+      link.click();
+    }
+
+    function clearQuestions() {
+      if (confirm("Are you sure you want to clear all questions?")) {
+        localStorage.removeItem("glider_questions");
+        document.getElementById("jsonEditor").value = "[]";
+      }
+    }
+  </script>
+</body>
+</html>
