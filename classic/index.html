@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glider Quiz</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 30px auto; padding: 0 20px; }
+    .question-box { margin-bottom: 20px; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Glider Quiz</h1>
+  <div id="quiz"></div>
+  <button id="nextBtn" class="hidden">Next Question</button>
+  <div id="scoreBox" class="hidden"></div>
+
+  <script>
+    let questions = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    fetch("questions.b64")
+      .then(res => res.text())
+      .then(base64 => {
+        const json = decodeURIComponent(escape(atob(base64)));
+        questions = JSON.parse(json);
+        renderQuestion();
+      })
+      .catch(err => {
+        document.getElementById("quiz").innerHTML = "<p>Error loading questions.</p>";
+        console.error("Failed to load questions:", err);
+      });
+
+    function renderQuestion() {
+      if (currentIndex >= questions.length) {
+        document.getElementById("quiz").innerHTML = '<h3>Quiz complete!</h3>';
+        document.getElementById("scoreBox").classList.remove("hidden");
+        document.getElementById("scoreBox").textContent = `Your score: ${score}/${questions.length}`;
+        document.getElementById("nextBtn").classList.add("hidden");
+        return;
+      }
+
+      const q = questions[currentIndex];
+      let html = `<div class='question-box'><h3>${q.question}</h3>`;
+      q.answers.forEach((a, i) => {
+        html += `<div><label><input type='radio' name='answer' value='${i}' /> ${a}</label></div>`;
+      });
+      html += `<button onclick='submitAnswer()'>Submit Answer</button></div>`;
+
+      document.getElementById('quiz').innerHTML = html;
+      document.getElementById('nextBtn').classList.add('hidden');
+    }
+
+    function submitAnswer() {
+      const selected = document.querySelector('input[name="answer"]:checked');
+      if (!selected) return alert('Please select an answer.');
+
+      const answerIndex = parseInt(selected.value);
+      const q = questions[currentIndex];
+      const allInputs = document.querySelectorAll('input[name="answer"]');
+
+      allInputs.forEach((input, i) => {
+        const label = input.parentElement;
+        if (i === q.correct) label.classList.add('correct');
+        else if (i === answerIndex) label.classList.add('incorrect');
+        input.disabled = true;
+      });
+
+      if (answerIndex === q.correct) score++;
+      document.getElementById('nextBtn').classList.remove('hidden');
+    }
+
+    document.getElementById('nextBtn').onclick = () => {
+      currentIndex++;
+      renderQuestion();
+    };
+  </script>
+</body>
+</html>
